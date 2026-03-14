@@ -1,0 +1,5 @@
+{
+  "name": "RiderGuard Insurance",
+  "description": "Specialized insurance for delivery riders. Fast, reliable, and high-contrast for outdoor use.",
+  "requestFramePermissions": ["geolocation"]
+}
