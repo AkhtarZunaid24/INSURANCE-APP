@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Shield, 
   AlertTriangle, 
@@ -12,7 +13,16 @@ import {
   RefreshCw,
   TrendingUp,
   ChevronRight,
-  Info
+  Info,
+  User,
+  MessageSquare,
+  X,
+  Send,
+  Package,
+  IndianRupee,
+  AlertOctagon,
+  Camera,
+  Upload
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -28,6 +38,41 @@ import { motion } from 'framer-motion';
 
 const Dashboard: React.FC = () => {
   const [autoRenew, setAutoRenew] = useState(true);
+  const [riskScore, setRiskScore] = useState(3.2);
+  const [historyTab, setHistoryTab] = useState('deliveries');
+  const [isIncidentModalOpen, setIsIncidentModalOpen] = useState(false);
+  const [incidentType, setIncidentType] = useState('Accident');
+  const [incidentDesc, setIncidentDesc] = useState('');
+  const [incidentReported, setIncidentReported] = useState(false);
+
+  const historyData = {
+    deliveries: [
+      { id: 1, title: 'Swiggy Delivery', detail: '4.2 km • 15 mins', amount: '₹45', date: 'Today, 2:30 PM', status: 'Completed' },
+      { id: 2, title: 'Zomato Delivery', detail: '1.8 km • 8 mins', amount: '₹30', date: 'Today, 1:15 PM', status: 'Completed' },
+      { id: 3, title: 'Swiggy Delivery', detail: '3.5 km • 12 mins', amount: '₹40', date: 'Yesterday', status: 'Completed' },
+    ],
+    earnings: [
+      { id: 1, title: 'Daily Payout', detail: '12 Deliveries', amount: '₹850', date: 'Yesterday', status: 'Credited' },
+      { id: 2, title: 'Rain Bonus', detail: 'Severe Weather', amount: '₹150', date: 'Jan 15', status: 'Credited' },
+      { id: 3, title: 'Weekly Incentive', detail: '50+ Deliveries', amount: '₹500', date: 'Jan 14', status: 'Credited' },
+    ],
+    incidents: [
+      { id: 1, title: 'Minor Collision', detail: 'Reported via App', amount: '--', date: 'Jan 10', status: 'Under Review' },
+      { id: 2, title: 'Speeding Alert', detail: 'Exceeded 60km/h', amount: '--', date: 'Jan 05', status: 'Warning' },
+    ]
+  };
+
+  // Simulate real-time risk updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRiskScore(prev => {
+        const change = (Math.random() - 0.5) * 1.5;
+        const next = Math.max(1.5, Math.min(8.5, prev + change));
+        return parseFloat(next.toFixed(1));
+      });
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Mock data for the chart
   const chartData = [
@@ -35,15 +80,6 @@ const Dashboard: React.FC = () => {
     { name: 'Week 2', saved: 150, paid: 120 },
     { name: 'Week 3', saved: 600, paid: 120 },
     { name: 'Week 4', saved: 300, paid: 120 },
-  ];
-
-  const recentActivity = [
-    { id: 1, type: 'Rain Payout', amount: '₹150', date: 'Jan 15', status: 'Completed' },
-    { id: 2, type: 'Premium Paid', amount: '-₹120', date: 'Jan 12', status: 'Completed' },
-    { id: 3, type: 'AQI Payout', amount: '₹200', date: 'Jan 10', status: 'Completed' },
-    { id: 4, type: 'Heatwave Payout', amount: '₹300', date: 'Jan 08', status: 'Completed' },
-    { id: 5, type: 'Flood Payout', amount: '₹500', date: 'Jan 05', status: 'Completed' },
-    { id: 6, type: 'Wind Payout', amount: '₹100', date: 'Jan 02', status: 'Completed' },
   ];
 
   return (
@@ -71,17 +107,59 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-6">
-            <div className="hidden md:block text-right">
-              <div className="text-xs font-black uppercase tracking-wider text-zinc-500">Risk Score</div>
-              <div className="flex items-center justify-end gap-2">
-                <span className="text-2xl font-black text-yellow-500">3.2</span>
-                <span className="text-xs font-bold text-zinc-400">/ 10</span>
+            <div className="hidden md:flex items-center gap-4">
+              <div className="relative w-16 h-10">
+                <svg viewBox="0 0 100 60" className="w-full h-full transform -rotate-0">
+                  {/* Background Track */}
+                  <path 
+                    d="M 10 50 A 40 40 0 0 1 90 50" 
+                    fill="none" 
+                    stroke="#F4F4F5" 
+                    strokeWidth="12" 
+                    strokeLinecap="round"
+                  />
+                  {/* Progress Track */}
+                  <motion.path 
+                    d="M 10 50 A 40 40 0 0 1 90 50" 
+                    fill="none" 
+                    stroke={riskScore > 7 ? "#ef4444" : riskScore > 4 ? "#eab308" : "#22c55e"}
+                    strokeWidth="12" 
+                    strokeLinecap="round"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: riskScore / 10 }}
+                    transition={{ duration: 1.5, ease: "circOut" }}
+                  />
+                </svg>
+                <motion.div 
+                  key={riskScore}
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 text-[10px] font-black"
+                >
+                  {riskScore}
+                </motion.div>
+              </div>
+              <div className="text-right">
+                <div className="text-xs font-black uppercase tracking-wider text-zinc-500">Risk Score</div>
+                <div className="flex items-center justify-end gap-1">
+                  <span className={`text-[10px] font-black uppercase ${riskScore > 7 ? 'text-red-500' : riskScore > 4 ? 'text-yellow-500' : 'text-green-500'}`}>
+                    {riskScore > 7 ? 'High' : riskScore > 4 ? 'Moderate' : 'Low'}
+                  </span>
+                </div>
               </div>
             </div>
             <div className="h-10 w-[2px] bg-zinc-100 hidden md:block"></div>
-            <div className="text-right">
-              <div className="text-xs font-black uppercase tracking-wider text-zinc-500">Wallet Balance</div>
-              <div className="text-2xl font-black text-black">₹2,450.00</div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <div className="text-xs font-black uppercase tracking-wider text-zinc-500">Wallet Balance</div>
+                <div className="text-2xl font-black text-black">₹2,450.00</div>
+              </div>
+              <Link 
+                to="/profile" 
+                className="w-12 h-12 bg-black text-white rounded-2xl flex items-center justify-center hover:bg-zinc-800 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] border-2 border-black"
+              >
+                <User className="w-6 h-6" />
+              </Link>
             </div>
           </div>
         </div>
@@ -306,51 +384,120 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div className="space-y-8">
-            {/* Recent Activity */}
+            {/* Rider History */}
             <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
                   <History className="w-4 h-4" />
-                  Recent Activity
+                  Rider History
                 </h2>
-                <button className="text-[10px] font-black text-zinc-400 hover:text-black uppercase underline">View All</button>
+                <button className="text-[10px] font-black text-zinc-400 hover:text-black uppercase underline">View Full Log</button>
               </div>
               
+              {/* Tabs */}
+              <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+                <button 
+                  onClick={() => setHistoryTab('deliveries')}
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-colors border-2 ${historyTab === 'deliveries' ? 'bg-black text-white border-black' : 'bg-zinc-50 text-zinc-500 border-transparent hover:border-black/20'}`}
+                >
+                  Deliveries
+                </button>
+                <button 
+                  onClick={() => setHistoryTab('earnings')}
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-colors border-2 ${historyTab === 'earnings' ? 'bg-black text-white border-black' : 'bg-zinc-50 text-zinc-500 border-transparent hover:border-black/20'}`}
+                >
+                  Earnings
+                </button>
+                <button 
+                  onClick={() => setHistoryTab('incidents')}
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-colors border-2 ${historyTab === 'incidents' ? 'bg-black text-white border-black' : 'bg-zinc-50 text-zinc-500 border-transparent hover:border-black/20'}`}
+                >
+                  Incidents
+                </button>
+              </div>
+
               <div className="space-y-4">
-                {recentActivity.map((item) => (
+                {historyTab === 'deliveries' && historyData.deliveries.map((item) => (
                   <div key={item.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-zinc-50 transition-colors border border-transparent hover:border-black/5">
                     <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${item.amount.startsWith('-') ? 'bg-zinc-100 text-zinc-600' : 'bg-green-100 text-green-600'}`}>
-                        {item.amount.startsWith('-') ? <RefreshCw className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" />}
+                      <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
+                        <Package className="w-4 h-4" />
                       </div>
                       <div>
-                        <div className="text-xs font-black uppercase">{item.type}</div>
-                        <div className="text-[10px] font-bold text-zinc-400 uppercase">{item.date}</div>
+                        <div className="text-xs font-black uppercase">{item.title}</div>
+                        <div className="text-[10px] font-bold text-zinc-400 uppercase">{item.detail} • {item.date}</div>
                       </div>
                     </div>
-                    <div className={`text-sm font-black ${item.amount.startsWith('-') ? 'text-black' : 'text-green-600'}`}>
-                      {item.amount}
+                    <div className="text-right">
+                      <div className="text-sm font-black">{item.amount}</div>
+                      <div className="text-[10px] font-bold text-green-600 uppercase">{item.status}</div>
+                    </div>
+                  </div>
+                ))}
+
+                {historyTab === 'earnings' && historyData.earnings.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-zinc-50 transition-colors border border-transparent hover:border-black/5">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-green-100 text-green-600">
+                        <IndianRupee className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-black uppercase">{item.title}</div>
+                        <div className="text-[10px] font-bold text-zinc-400 uppercase">{item.detail} • {item.date}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-black text-green-600">{item.amount}</div>
+                      <div className="text-[10px] font-bold text-green-600 uppercase">{item.status}</div>
+                    </div>
+                  </div>
+                ))}
+
+                {historyTab === 'incidents' && historyData.incidents.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-zinc-50 transition-colors border border-transparent hover:border-black/5">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${item.status === 'Warning' ? 'bg-yellow-100 text-yellow-600' : 'bg-red-100 text-red-600'}`}>
+                        <AlertOctagon className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-black uppercase">{item.title}</div>
+                        <div className="text-[10px] font-bold text-zinc-400 uppercase">{item.detail} • {item.date}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[10px] font-bold text-zinc-500 uppercase">{item.status}</div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* 4. Policy Management */}
+            {/* 4. Active Insurance Policy */}
             <div className="bg-black text-white rounded-3xl p-6 shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)]">
               <div className="flex items-center gap-2 mb-6">
                 <Shield className="w-5 h-5 text-yellow-400" />
-                <h2 className="text-sm font-black uppercase tracking-widest">Policy Management</h2>
+                <h2 className="text-sm font-black uppercase tracking-widest">Active Policy</h2>
               </div>
 
               <div className="space-y-6">
-                <div className="flex justify-between items-end">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="text-[10px] font-black text-zinc-400 uppercase mb-1">Current Premium</div>
-                    <div className="text-3xl font-black">₹120<span className="text-sm text-zinc-500">/wk</span></div>
+                    <div className="text-[10px] font-black text-zinc-400 uppercase mb-1">Policy Number</div>
+                    <div className="text-sm font-black text-yellow-400">RG-8821-W</div>
                   </div>
-                  <div className="bg-zinc-800 px-3 py-1 rounded-full text-[10px] font-black uppercase text-yellow-400 border border-yellow-400/20">
-                    Active
+                  <div>
+                    <div className="text-[10px] font-black text-zinc-400 uppercase mb-1">Coverage Type</div>
+                    <div className="text-sm font-black">Pro Rider Plus</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-black text-zinc-400 uppercase mb-1">Expiry Date</div>
+                    <div className="text-sm font-black">Jan 22, 2026</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-black text-zinc-400 uppercase mb-1">Status</div>
+                    <div className="bg-zinc-800 px-3 py-1 rounded-full text-[10px] font-black uppercase text-yellow-400 border border-yellow-400/20 inline-block">
+                      Active
+                    </div>
                   </div>
                 </div>
 
@@ -376,6 +523,22 @@ const Dashboard: React.FC = () => {
                   Manage Coverage
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
+
+                <Link 
+                  to="/submit-claim"
+                  className="w-full bg-red-500 text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-red-600 transition-colors flex items-center justify-center gap-2 group shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-2 border-black"
+                >
+                  <AlertTriangle className="w-4 h-4" />
+                  File a Claim
+                </Link>
+
+                <button 
+                  onClick={() => setIsIncidentModalOpen(true)}
+                  className="w-full bg-yellow-400 text-black py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-yellow-500 transition-colors flex items-center justify-center gap-2 group shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-2 border-black mt-4"
+                >
+                  <AlertOctagon className="w-4 h-4" />
+                  Quick Report Incident
+                </button>
               </div>
             </div>
           </div>
@@ -383,12 +546,117 @@ const Dashboard: React.FC = () => {
       </main>
 
       {/* Mobile Navigation (Floating) */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-black text-white px-6 py-4 rounded-2xl flex items-center gap-8 shadow-2xl border border-white/10 md:hidden">
-        <button className="text-yellow-400"><TrendingUp className="w-6 h-6" /></button>
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-black text-white px-6 py-4 rounded-2xl flex items-center gap-8 shadow-2xl border border-white/10 md:hidden z-40">
+        <Link to="/dashboard" className="text-yellow-400"><TrendingUp className="w-6 h-6" /></Link>
         <button className="text-zinc-500"><MapIcon className="w-6 h-6" /></button>
         <button className="text-zinc-500"><Wallet className="w-6 h-6" /></button>
-        <button className="text-zinc-500"><Shield className="w-6 h-6" /></button>
+        <Link to="/profile" className="text-zinc-500"><User className="w-6 h-6" /></Link>
       </div>
+
+      {/* Floating Support Button */}
+      <Link 
+        to="/support"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-yellow-400 text-black rounded-full flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-2 border-black hover:scale-105 transition-transform z-50"
+      >
+        <MessageSquare className="w-6 h-6" />
+      </Link>
+
+      {/* Incident Reporting Modal */}
+      {isIncidentModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white rounded-3xl border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b-2 border-black flex justify-between items-center bg-yellow-400">
+              <h3 className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
+                <AlertOctagon className="w-6 h-6" />
+                Report Incident
+              </h3>
+              <button 
+                onClick={() => {
+                  setIsIncidentModalOpen(false);
+                  setIncidentReported(false);
+                  setIncidentDesc('');
+                }}
+                className="p-2 hover:bg-black/10 rounded-full transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1">
+              {incidentReported ? (
+                <div className="text-center py-8">
+                  <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-600">
+                    <CheckCircle2 size={40} />
+                  </div>
+                  <h4 className="text-2xl font-black uppercase mb-2">Incident Reported</h4>
+                  <p className="text-zinc-500 font-medium mb-8">Your report has been submitted successfully. Our team will review it shortly.</p>
+                  <button 
+                    onClick={() => {
+                      setIsIncidentModalOpen(false);
+                      setIncidentReported(false);
+                      setIncidentDesc('');
+                    }}
+                    className="w-full bg-black text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-xs font-black uppercase text-zinc-500 mb-2">Incident Type</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {['Accident', 'Vehicle Issue', 'Theft', 'Other'].map(type => (
+                        <button
+                          key={type}
+                          onClick={() => setIncidentType(type)}
+                          className={`py-3 px-4 rounded-xl border-2 font-bold text-sm transition-all ${incidentType === type ? 'border-black bg-black text-white' : 'border-zinc-200 bg-zinc-50 text-zinc-500 hover:border-black/30'}`}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-black uppercase text-zinc-500 mb-2">Description</label>
+                    <textarea 
+                      value={incidentDesc}
+                      onChange={(e) => setIncidentDesc(e.target.value)}
+                      placeholder="Briefly describe what happened..."
+                      className="w-full p-4 rounded-xl border-2 border-zinc-200 bg-zinc-50 focus:border-black focus:bg-white outline-none transition-all resize-none h-32 font-medium"
+                    ></textarea>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-black uppercase text-zinc-500 mb-2">Photos (Optional)</label>
+                    <div className="grid grid-cols-3 gap-3">
+                      <label className="aspect-square rounded-xl border-2 border-dashed border-zinc-300 bg-zinc-50 flex flex-col items-center justify-center cursor-pointer hover:border-black hover:bg-zinc-100 transition-all text-zinc-400 hover:text-black">
+                        <Camera size={24} className="mb-2" />
+                        <span className="text-[10px] font-black uppercase">Take Photo</span>
+                        <input type="file" accept="image/*" capture="environment" className="hidden" />
+                      </label>
+                      <label className="aspect-square rounded-xl border-2 border-dashed border-zinc-300 bg-zinc-50 flex flex-col items-center justify-center cursor-pointer hover:border-black hover:bg-zinc-100 transition-all text-zinc-400 hover:text-black">
+                        <Upload size={24} className="mb-2" />
+                        <span className="text-[10px] font-black uppercase">Upload</span>
+                        <input type="file" accept="image/*" className="hidden" />
+                      </label>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={() => setIncidentReported(true)}
+                    disabled={!incidentDesc.trim()}
+                    className="w-full bg-red-500 text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-red-600 transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-2 border-black disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+                  >
+                    Submit Report
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

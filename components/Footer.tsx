@@ -51,9 +51,18 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-lg font-bold mb-6 uppercase tracking-wider">Follow Us</h4>
             <div className="flex gap-4">
-              {[Instagram, Twitter, Facebook].map((Icon, i) => (
-                <a key={i} href="#" className="w-12 h-12 bg-zinc-900 rounded-xl flex items-center justify-center hover:bg-yellow-400 hover:text-black transition-all">
-                  <Icon size={24} />
+              {[
+                { Icon: Instagram, label: "Instagram" },
+                { Icon: Twitter, label: "Twitter" },
+                { Icon: Facebook, label: "Facebook" }
+              ].map(({ Icon, label }, i) => (
+                <a 
+                  key={i} 
+                  href="#" 
+                  className="w-12 h-12 bg-zinc-900 rounded-xl flex items-center justify-center hover:bg-yellow-400 hover:text-black transition-all focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  aria-label={`Follow us on ${label}`}
+                >
+                  <Icon size={24} aria-hidden="true" />
                 </a>
               ))}
             </div>

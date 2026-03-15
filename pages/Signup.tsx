@@ -71,72 +71,72 @@ const Signup: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col items-center justify-center p-4 py-12">
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 py-12">
       <Link to="/" className="flex items-center gap-2 mb-12 hover:opacity-80 transition-opacity" aria-label="RiderGuard Home">
         <Shield className="w-10 h-10 text-yellow-500" aria-hidden="true" />
-        <span className="text-3xl font-display font-bold text-black">RIDERGUARD</span>
+        <span className="text-3xl font-display font-bold text-white">RIDERGUARD</span>
       </Link>
 
-      <div className="w-full max-w-md bg-white p-8 md:p-10 rounded-3xl border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
-        <h1 id="signup-heading" className="text-3xl font-black text-black mb-2 uppercase">JOIN THE FLEET</h1>
+      <div className="w-full max-w-md bg-zinc-900 p-8 md:p-10 rounded-3xl border-4 border-white/10 shadow-[12px_12px_0px_0px_rgba(255,255,255,0.05)]">
+        <h1 id="signup-heading" className="text-3xl font-black text-white mb-2 uppercase">JOIN THE FLEET</h1>
         <p className="text-zinc-500 font-bold mb-8 uppercase tracking-wider">Start protecting your ride today</p>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border-2 border-red-500 rounded-xl text-red-600 text-xs font-black uppercase tracking-widest">
+          <div className="mb-6 p-4 bg-red-500/10 border-2 border-red-500 rounded-xl text-red-500 text-xs font-black uppercase tracking-widest">
             {error}
           </div>
         )}
 
         <form className="space-y-6" onSubmit={handleSignup} aria-labelledby="signup-heading">
           <div>
-            <label htmlFor="full-name" className="block text-sm font-black text-black uppercase mb-2">Full Name</label>
+            <label htmlFor="full-name" className="block text-sm font-black text-zinc-300 uppercase mb-2">Full Name</label>
             <div className="relative">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" aria-hidden="true" />
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" aria-hidden="true" />
               <input 
                 id="full-name"
                 type="text" 
                 required
                 placeholder="John Rider"
-                className="w-full pl-12 pr-4 py-4 bg-zinc-100 border-2 border-transparent focus:border-yellow-400 focus:bg-white rounded-xl outline-none font-bold transition-all"
+                className="w-full pl-12 pr-4 py-4 bg-zinc-800 border-2 border-white/5 focus:border-yellow-400 focus:bg-zinc-700 rounded-xl outline-none font-bold transition-all text-white placeholder:text-zinc-600"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-black text-black uppercase mb-2">Email Address</label>
+            <label htmlFor="email" className="block text-sm font-black text-zinc-300 uppercase mb-2">Email Address</label>
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" aria-hidden="true" />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" aria-hidden="true" />
               <input 
                 id="email"
                 type="email" 
                 required
                 placeholder="rider@example.com"
-                className="w-full pl-12 pr-4 py-4 bg-zinc-100 border-2 border-transparent focus:border-yellow-400 focus:bg-white rounded-xl outline-none font-bold transition-all"
+                className="w-full pl-12 pr-4 py-4 bg-zinc-800 border-2 border-white/5 focus:border-yellow-400 focus:bg-zinc-700 rounded-xl outline-none font-bold transition-all text-white placeholder:text-zinc-600"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="vehicle-type" className="block text-sm font-black text-black uppercase mb-2">Vehicle Type</label>
+            <label htmlFor="vehicle-type" className="block text-sm font-black text-zinc-300 uppercase mb-2">Vehicle Type</label>
             <div className="relative">
-              <Bike className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" aria-hidden="true" />
+              <Bike className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" aria-hidden="true" />
               <select 
                 id="vehicle-type"
-                className="w-full pl-12 pr-4 py-4 bg-zinc-100 border-2 border-transparent focus:border-yellow-400 focus:bg-white rounded-xl outline-none font-bold transition-all appearance-none cursor-pointer"
+                className="w-full pl-12 pr-4 py-4 bg-zinc-800 border-2 border-white/5 focus:border-yellow-400 focus:bg-zinc-700 rounded-xl outline-none font-bold transition-all appearance-none cursor-pointer text-white"
               >
-                <option>E-bike</option>
-                <option>Scooter</option>
-                <option>Motorcycle</option>
-                <option>Car</option>
-                <option>Bicycle</option>
+                <option className="bg-zinc-800">E-bike</option>
+                <option className="bg-zinc-800">Scooter</option>
+                <option className="bg-zinc-800">Motorcycle</option>
+                <option className="bg-zinc-800">Car</option>
+                <option className="bg-zinc-800">Bicycle</option>
               </select>
             </div>
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-black text-black uppercase mb-2">Password</label>
+            <label htmlFor="password" className="block text-sm font-black text-zinc-300 uppercase mb-2">Password</label>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" aria-hidden="true" />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" aria-hidden="true" />
               <input 
                 id="password"
                 type="password" 
@@ -144,19 +144,19 @@ const Signup: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-12 pr-4 py-4 bg-zinc-100 border-2 border-transparent focus:border-yellow-400 focus:bg-white rounded-xl outline-none font-bold transition-all"
+                className="w-full pl-12 pr-4 py-4 bg-zinc-800 border-2 border-white/5 focus:border-yellow-400 focus:bg-zinc-700 rounded-xl outline-none font-bold transition-all text-white placeholder:text-zinc-600"
                 aria-describedby="password-strength"
               />
             </div>
             {password && (
               <div id="password-strength" className="mt-3 space-y-2" aria-live="polite">
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Strength</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Strength</span>
                   <span className={`text-[10px] font-black uppercase tracking-widest ${strength.color.replace('bg-', 'text-')}`}>
                     {strength.label}
                   </span>
                 </div>
-                <div className="h-1.5 w-full bg-zinc-100 rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
                   <div 
                     className={`h-full transition-all duration-500 ${strength.color}`}
                     style={{ width: `${strength.score}%` }}
@@ -178,12 +178,12 @@ const Signup: React.FC = () => {
                 type="checkbox"
                 checked={agreedToTerms}
                 onChange={(e) => setAgreedToTerms(e.target.checked)}
-                className="w-5 h-5 rounded border-2 border-black text-yellow-400 focus:ring-yellow-400 cursor-pointer transition-all"
+                className="w-5 h-5 rounded border-2 border-white/20 bg-zinc-800 text-yellow-400 focus:ring-yellow-400 cursor-pointer transition-all"
                 required
               />
             </div>
             <label htmlFor="terms" className="text-xs font-bold text-zinc-500 uppercase leading-tight cursor-pointer select-none">
-              I agree to the <Link to="/terms" className="text-black underline">Terms and Conditions</Link> and <Link to="/terms" className="text-black underline">Privacy Policy</Link>.
+              I agree to the <Link to="/terms" className="text-white underline">Terms and Conditions</Link> and <Link to="/terms" className="text-white underline">Privacy Policy</Link>.
             </label>
           </div>
 
@@ -193,7 +193,7 @@ const Signup: React.FC = () => {
             className={`w-full py-4 rounded-xl font-black text-lg transition-all shadow-lg ${
               agreedToTerms && !isLoading
                 ? 'bg-yellow-400 text-black hover:bg-yellow-500 cursor-pointer' 
-                : 'bg-zinc-200 text-zinc-400 cursor-not-allowed opacity-50'
+                : 'bg-zinc-800 text-zinc-600 cursor-not-allowed opacity-50'
             }`}
           >
             {isLoading ? 'JOINING...' : 'CREATE ACCOUNT'}
@@ -202,10 +202,10 @@ const Signup: React.FC = () => {
 
         <div className="mt-8 relative">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t-2 border-zinc-100"></div>
+            <div className="w-full border-t-2 border-white/5"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white text-zinc-400 font-bold uppercase tracking-widest">Or join with</span>
+            <span className="px-4 bg-zinc-900 text-zinc-500 font-bold uppercase tracking-widest">Or join with</span>
           </div>
         </div>
 
@@ -213,14 +213,14 @@ const Signup: React.FC = () => {
           <button 
             onClick={handleGoogleSignIn}
             disabled={isLoading}
-            className="flex items-center justify-center gap-3 py-4 border-2 border-black rounded-xl font-black hover:bg-zinc-50 transition-all disabled:opacity-50"
+            className="flex items-center justify-center gap-3 py-4 border-2 border-white/10 rounded-xl font-black text-white hover:bg-zinc-800 transition-all disabled:opacity-50"
           >
             <Chrome className="w-5 h-5" />
             GOOGLE
           </button>
           <button 
             disabled={isLoading}
-            className="flex items-center justify-center gap-3 py-4 border-2 border-black rounded-xl font-black hover:bg-zinc-50 transition-all disabled:opacity-50"
+            className="flex items-center justify-center gap-3 py-4 border-2 border-white/10 rounded-xl font-black text-white hover:bg-zinc-800 transition-all disabled:opacity-50"
           >
             <Facebook className="w-5 h-5" />
             FACEBOOK
@@ -229,7 +229,7 @@ const Signup: React.FC = () => {
 
         <p className="mt-10 text-center text-zinc-500 font-bold">
           ALREADY A RIDER?{' '}
-          <Link to="/login" className="text-black underline hover:text-yellow-600 transition-colors">
+          <Link to="/login" className="text-white underline hover:text-yellow-400 transition-colors">
             LOG IN
           </Link>
         </p>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   LayoutDashboard, 
   Users, 
@@ -21,7 +21,8 @@ import {
   Wallet,
   Activity,
   ChevronRight,
-  UserCheck
+  UserCheck,
+  Upload
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -37,7 +38,9 @@ import {
   Bar,
   Cell,
   PieChart,
-  Pie
+  Pie,
+  ComposedChart,
+  Legend
 } from 'recharts';
 
 // Mock Data
@@ -59,22 +62,123 @@ const REVENUE_BY_CITY = [
   { name: 'Pune', value: 210000, accidents: 5 },
 ];
 
-const RECENT_CLAIMS = [
-  { id: 'CLM-9021', rider: 'Rahul Sharma', type: 'Accident', status: 'Urgent', time: '2 mins ago', amount: '₹12,000' },
-  { id: 'CLM-9020', rider: 'Amit Patel', type: 'Theft', status: 'Pending', time: '15 mins ago', amount: '₹45,000' },
-  { id: 'CLM-9019', rider: 'Suresh Kumar', type: 'Medical', status: 'Review', time: '1 hour ago', amount: '₹8,500' },
+const ML_ACCURACY_DATA = [
+  { time: '08:00', actual: 45, predicted: 42, accuracy: 93 },
+  { time: '10:00', actual: 52, predicted: 55, accuracy: 94 },
+  { time: '12:00', actual: 89, predicted: 85, accuracy: 95 },
+  { time: '14:00', actual: 110, predicted: 115, accuracy: 95 },
+  { time: '16:00', actual: 105, predicted: 100, accuracy: 95 },
+  { time: '18:00', actual: 130, predicted: 125, accuracy: 96 },
+  { time: '20:00', actual: 85, predicted: 90, accuracy: 94 },
+];
+
+const ALL_CLAIMS = [
+  { id: 'CLM-9021', rider: 'Rahul Sharma', type: 'Accident', status: 'Urgent', time: '2 mins ago', amount: '₹12,000', policy: 'RG-8821-W' },
+  { id: 'CLM-9020', rider: 'Amit Patel', type: 'Theft', status: 'Pending', time: '15 mins ago', amount: '₹45,000', policy: 'RG-8820-X' },
+  { id: 'CLM-9019', rider: 'Suresh Kumar', type: 'Medical', status: 'Review', time: '1 hour ago', amount: '₹8,500', policy: 'RG-8819-Y' },
+  { id: 'CLM-9018', rider: 'Priya Das', type: 'Accident', status: 'Approve', time: '2 hours ago', amount: '₹5,000', policy: 'RG-8818-Z' },
+  { id: 'CLM-9017', rider: 'Vikram Singh', type: 'Damage', status: 'Reject', time: '5 hours ago', amount: '₹2,500', policy: 'RG-8817-A' },
+  { id: 'CLM-9016', rider: 'Arjun Reddy', type: 'Theft', status: 'Pending', time: '1 day ago', amount: '₹50,000', policy: 'RG-8816-B' },
+  { id: 'CLM-9015', rider: 'Neha Gupta', type: 'Medical', status: 'Urgent', time: '1 day ago', amount: '₹15,000', policy: 'RG-8815-C' },
 ];
 
 const RIDERS = [
-  { id: 'RD-101', name: 'Vikram Singh', vehicle: 'Honda Activa', kyc: 'Verified', score: 92, balance: '₹1,250', status: 'Active' },
-  { id: 'RD-102', name: 'Priya Das', vehicle: 'TVS XL100', kyc: 'Pending', score: 78, balance: '₹450', status: 'Active' },
-  { id: 'RD-103', name: 'Arjun Reddy', vehicle: 'Bajaj Pulsar', kyc: 'Verified', score: 65, balance: '₹2,100', status: 'Inactive' },
+  { id: 'RD-101', name: 'Vikram Singh', email: 'vikram.s@example.com', vehicle: 'Honda Activa', kyc: 'Verified', score: 92, balance: '₹1,250', status: 'Active' },
+  { id: 'RD-102', name: 'Priya Das', email: 'priya.d@example.com', vehicle: 'TVS XL100', kyc: 'Pending', score: 78, balance: '₹450', status: 'Active' },
+  { id: 'RD-103', name: 'Arjun Reddy', email: 'arjun.r@example.com', vehicle: 'Bajaj Pulsar', kyc: 'Verified', score: 55, balance: '₹2,100', status: 'Inactive' },
 ];
+
+const RIDER_ACTIVITY_LOG = [
+  { id: 1, rider: 'Vikram Singh', action: 'Login', details: 'Logged in from App v2.4', time: '10 mins ago', type: 'system' },
+  { id: 2, rider: 'Priya Das', action: 'Safety Incident', details: 'Hard braking detected (Speed: 45km/h)', time: '25 mins ago', type: 'alert' },
+  { id: 3, rider: 'Arjun Reddy', action: 'Policy Update', details: 'Upgraded to Pro Rider Plus', time: '1 hour ago', type: 'policy' },
+  { id: 4, rider: 'Rahul Sharma', action: 'Login', details: 'Logged in from App v2.4', time: '2 hours ago', type: 'system' },
+  { id: 5, rider: 'Amit Patel', action: 'Safety Incident', details: 'Speeding alert (72km/h in 50 zone)', time: '3 hours ago', type: 'alert' },
+];
+
+const exportToCSV = (ridersList: any[]) => {
+  const headers = ['Rider ID', 'Name', 'Email', 'KYC Status', 'Safety Score', 'Wallet Balance'];
+  const csvRows = [
+    headers.join(','),
+    ...ridersList.map(rider => [
+      rider.id,
+      `"${rider.name}"`,
+      `"${rider.email}"`,
+      rider.kyc,
+      rider.score,
+      `"${rider.balance}"`
+    ].join(','))
+  ];
+  
+  const csvString = csvRows.join('\n');
+  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'riders_export.csv';
+  a.click();
+  window.URL.revokeObjectURL(url);
+};
 
 const AdminDashboard: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [activeTab, setActiveTab] = useState<'ops' | 'crm' | 'claims' | 'finance'>('ops');
+  const [crmTab, setCrmTab] = useState<'list' | 'activity'>('list');
   const [searchQuery, setSearchQuery] = useState('');
+  const [claimStatusFilter, setClaimStatusFilter] = useState<string>('All');
+  const [claimTypeFilter, setClaimTypeFilter] = useState<string>('All');
+  const [selectedClaim, setSelectedClaim] = useState(ALL_CLAIMS[0]);
+  const [ridersList, setRidersList] = useState(RIDERS);
+  const [selectedKycRider, setSelectedKycRider] = useState<any>(null);
+
+  const [mapFilterType, setMapFilterType] = useState<string>('All');
+  const [mapFilterSeverity, setMapFilterSeverity] = useState<string>('All');
+  const [mapPins, setMapPins] = useState<any[]>([]);
+
+  useEffect(() => {
+    const types = ['Accident', 'Weather', 'Theft'];
+    const severities = ['High', 'Medium', 'Low'];
+    const initialPins = Array.from({ length: 25 }).map((_, i) => ({
+      id: i,
+      x: Math.random() * 80 + 10,
+      y: Math.random() * 80 + 10,
+      type: types[Math.floor(Math.random() * types.length)],
+      severity: severities[Math.floor(Math.random() * severities.length)],
+    }));
+    setMapPins(initialPins);
+
+    const interval = setInterval(() => {
+      setMapPins(prev => {
+        const newPins = [...prev];
+        for (let i = 0; i < 5; i++) {
+          const idx = Math.floor(Math.random() * newPins.length);
+          newPins[idx] = {
+            ...newPins[idx],
+            x: Math.max(5, Math.min(95, newPins[idx].x + (Math.random() * 4 - 2))),
+            y: Math.max(5, Math.min(95, newPins[idx].y + (Math.random() * 4 - 2))),
+          };
+        }
+        return newPins;
+      });
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const filteredPins = useMemo(() => {
+    return mapPins.filter(pin => {
+      const matchType = mapFilterType === 'All' || pin.type === mapFilterType;
+      const matchSeverity = mapFilterSeverity === 'All' || pin.severity === mapFilterSeverity;
+      return matchType && matchSeverity;
+    });
+  }, [mapPins, mapFilterType, mapFilterSeverity]);
+
+  const filteredClaims = useMemo(() => {
+    return ALL_CLAIMS.filter(claim => {
+      const matchStatus = claimStatusFilter === 'All' || claim.status.toLowerCase() === claimStatusFilter.toLowerCase();
+      const matchType = claimTypeFilter === 'All' || claim.type.toLowerCase() === claimTypeFilter.toLowerCase();
+      return matchStatus && matchType;
+    });
+  }, [claimStatusFilter, claimTypeFilter]);
 
   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
 
@@ -273,7 +377,7 @@ const AdminDashboard: React.FC = () => {
                     <span className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
                   </div>
                   <div className="space-y-4">
-                    {RECENT_CLAIMS.map((claim) => (
+                    {ALL_CLAIMS.slice(0, 3).map((claim) => (
                       <div key={claim.id} className={`p-4 rounded-2xl border transition-all hover:scale-[1.02] cursor-pointer ${isDarkMode ? 'border-zinc-800 bg-zinc-900/50' : 'border-zinc-100 bg-zinc-50'}`}>
                         <div className="flex justify-between items-start mb-2">
                           <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase ${claim.status === 'Urgent' ? 'bg-red-500 text-white' : 'bg-yellow-500 text-black'}`}>
@@ -297,20 +401,32 @@ const AdminDashboard: React.FC = () => {
 
               {/* Active Riders Map Placeholder */}
               <div className={`p-8 rounded-3xl border shadow-sm overflow-hidden relative ${cardClass}`}>
-                <div className="flex justify-between items-center mb-8">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                   <div>
-                    <h3 className="text-xl font-black tracking-tight uppercase">Active Coverage Map</h3>
-                    <p className="text-sm text-zinc-400 font-medium">Real-time rider density and risk zones</p>
+                    <h3 className="text-xl font-black tracking-tight uppercase">Regional Risk Map</h3>
+                    <p className="text-sm text-zinc-400 font-medium">Real-time simulated disaster & risk zones</p>
                   </div>
-                  <div className="flex gap-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-emerald-500 rounded-full" />
-                      <span className="text-xs font-bold">Safe Zone</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-red-500 rounded-full" />
-                      <span className="text-xs font-bold">High Risk</span>
-                    </div>
+                  <div className="flex flex-wrap gap-3">
+                    <select 
+                      value={mapFilterType}
+                      onChange={(e) => setMapFilterType(e.target.value)}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold border outline-none cursor-pointer ${isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'}`}
+                    >
+                      <option value="All">All Types</option>
+                      <option value="Accident">Accident</option>
+                      <option value="Weather">Weather</option>
+                      <option value="Theft">Theft</option>
+                    </select>
+                    <select 
+                      value={mapFilterSeverity}
+                      onChange={(e) => setMapFilterSeverity(e.target.value)}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold border outline-none cursor-pointer ${isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'}`}
+                    >
+                      <option value="All">All Severities</option>
+                      <option value="High">High</option>
+                      <option value="Medium">Medium</option>
+                      <option value="Low">Low</option>
+                    </select>
                   </div>
                 </div>
                 <div className="h-[400px] w-full bg-zinc-100 dark:bg-zinc-900 rounded-2xl relative overflow-hidden">
@@ -319,14 +435,18 @@ const AdminDashboard: React.FC = () => {
                   <div className="absolute top-1/4 left-1/3 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl" />
                   <div className="absolute bottom-1/3 right-1/4 w-48 h-48 bg-red-500/20 rounded-full blur-3xl" />
                   
-                  {/* Mock Rider Pins */}
-                  {[...Array(15)].map((_, i) => (
+                  {/* Real-time Simulated Pins */}
+                  {filteredPins.map((pin) => (
                     <div 
-                      key={i}
-                      className="absolute w-2 h-2 bg-yellow-500 rounded-full shadow-[0_0_10px_rgba(234,179,8,0.5)]"
+                      key={pin.id}
+                      className={`absolute w-3 h-3 rounded-full transition-all duration-1000 ${
+                        pin.severity === 'High' ? 'bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.8)]' : 
+                        pin.severity === 'Medium' ? 'bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.6)]' : 
+                        'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]'
+                      }`}
                       style={{ 
-                        top: `${Math.random() * 80 + 10}%`, 
-                        left: `${Math.random() * 80 + 10}%` 
+                        top: `${pin.y}%`, 
+                        left: `${pin.x}%` 
                       }}
                     />
                   ))}
@@ -334,14 +454,44 @@ const AdminDashboard: React.FC = () => {
                   <div className="absolute bottom-6 left-6 p-4 bg-black/80 backdrop-blur-md text-white rounded-2xl border border-white/10">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-yellow-500 rounded-xl flex items-center justify-center text-black font-black">
-                        12K
+                        {filteredPins.length}
                       </div>
                       <div>
-                        <p className="text-[10px] font-black uppercase text-zinc-400">Riders Online</p>
-                        <p className="text-sm font-bold">Pan-India Coverage</p>
+                        <p className="text-[10px] font-black uppercase text-zinc-400">Active Risks</p>
+                        <p className="text-sm font-bold">Currently Tracked</p>
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* ML Model Accuracy Chart */}
+              <div className={`p-8 rounded-3xl border shadow-sm ${cardClass}`}>
+                <div className="flex justify-between items-center mb-8">
+                  <div>
+                    <h3 className="text-xl font-black tracking-tight uppercase">ML Model Accuracy</h3>
+                    <p className="text-sm text-zinc-400 font-medium">Predicted vs Actual Claims (Time Series)</p>
+                  </div>
+                </div>
+                <div className="h-[300px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={ML_ACCURACY_DATA}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#27272a' : '#f4f4f5'} />
+                      <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{fontSize: 12, fontWeight: 600}} />
+                      <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fontWeight: 600}} />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: isDarkMode ? '#18181b' : '#fff', 
+                          border: 'none', 
+                          borderRadius: '16px',
+                          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                        }} 
+                      />
+                      <Legend wrapperStyle={{ paddingTop: '20px', fontWeight: 600, fontSize: '12px' }} />
+                      <Area type="monotone" dataKey="actual" name="Actual Claims" fill="#3b82f6" stroke="#2563eb" fillOpacity={0.1} strokeWidth={2} />
+                      <Line type="monotone" dataKey="predicted" name="Predicted Claims" stroke="#eab308" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
             </div>
@@ -349,10 +499,27 @@ const AdminDashboard: React.FC = () => {
 
           {activeTab === 'crm' && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <h2 className="text-2xl font-black uppercase tracking-tight">Rider Management</h2>
-                <div className="flex gap-3">
-                  <button className="flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-xs font-bold">
+                <div className="flex flex-wrap gap-3">
+                  <div className="flex bg-zinc-100 dark:bg-zinc-800 rounded-xl p-1">
+                    <button 
+                      onClick={() => setCrmTab('list')}
+                      className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${crmTab === 'list' ? 'bg-white dark:bg-zinc-700 shadow-sm' : 'text-zinc-500 hover:text-black dark:hover:text-white'}`}
+                    >
+                      Rider List
+                    </button>
+                    <button 
+                      onClick={() => setCrmTab('activity')}
+                      className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${crmTab === 'activity' ? 'bg-white dark:bg-zinc-700 shadow-sm' : 'text-zinc-500 hover:text-black dark:hover:text-white'}`}
+                    >
+                      Activity Log
+                    </button>
+                  </div>
+                  <button 
+                    onClick={() => exportToCSV(ridersList)}
+                    className="flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-xs font-bold hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                  >
                     <Download size={16} /> Export CSV
                   </button>
                   <button className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-xl text-xs font-bold">
@@ -361,123 +528,238 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </div>
 
-              <div className={`rounded-3xl border shadow-sm overflow-hidden ${cardClass}`}>
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className={`border-b ${isDarkMode ? 'border-zinc-800' : 'border-zinc-100'}`}>
-                      <th className="p-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest">Rider Details</th>
-                      <th className="p-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest">KYC Status</th>
-                      <th className="p-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest">Safety Score</th>
-                      <th className="p-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest">Wallet Balance</th>
-                      <th className="p-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {RIDERS.map((rider) => (
-                      <tr key={rider.id} className={`border-b last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors ${isDarkMode ? 'border-zinc-800' : 'border-zinc-100'}`}>
-                        <td className="p-6">
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-black">
-                              {rider.name.split(' ').map(n => n[0]).join('')}
-                            </div>
-                            <div>
-                              <p className="font-black text-sm">{rider.name}</p>
-                              <p className="text-xs text-zinc-400 font-bold">{rider.vehicle} • {rider.id}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="p-6">
-                          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${rider.kyc === 'Verified' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400'}`}>
-                            {rider.kyc}
-                          </span>
-                        </td>
-                        <td className="p-6">
-                          <div className="flex items-center gap-3">
-                            <div className="flex-1 h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden max-w-[100px]">
-                              <div 
-                                className={`h-full rounded-full ${rider.score > 80 ? 'bg-emerald-500' : rider.score > 60 ? 'bg-yellow-500' : 'bg-red-500'}`}
-                                style={{ width: `${rider.score}%` }}
-                              />
-                            </div>
-                            <span className="text-sm font-black">{rider.score}</span>
-                          </div>
-                        </td>
-                        <td className="p-6">
-                          <p className="text-sm font-black">{rider.balance}</p>
-                        </td>
-                        <td className="p-6">
-                          <button className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
-                            <MoreVertical size={16} className="text-zinc-400" />
-                          </button>
-                        </td>
+              {crmTab === 'list' && (
+                <div className={`rounded-3xl border shadow-sm overflow-hidden ${cardClass}`}>
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className={`border-b ${isDarkMode ? 'border-zinc-800' : 'border-zinc-100'}`}>
+                        <th className="p-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest">Rider Details</th>
+                        <th className="p-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest">KYC Status</th>
+                        <th className="p-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest">Safety Score</th>
+                        <th className="p-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest">Wallet Balance</th>
+                        <th className="p-6 text-[10px] font-black uppercase text-zinc-400 tracking-widest">Actions</th>
                       </tr>
+                    </thead>
+                    <tbody>
+                      {ridersList.map((rider) => (
+                        <tr key={rider.id} className={`border-b last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors ${isDarkMode ? 'border-zinc-800' : 'border-zinc-100'}`}>
+                          <td className="p-6">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-black">
+                                {rider.name.split(' ').map(n => n[0]).join('')}
+                              </div>
+                              <div>
+                                <p className="font-black text-sm">{rider.name}</p>
+                                <p className="text-xs text-zinc-400 font-bold">{rider.email} • {rider.id}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-6">
+                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${rider.kyc === 'Verified' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400'}`}>
+                              {rider.kyc}
+                            </span>
+                          </td>
+                          <td className="p-6">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-2 h-2 rounded-full ${rider.score > 80 ? 'bg-emerald-500' : rider.score >= 60 ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                              <div className="flex-1 h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden max-w-[100px]">
+                                <div 
+                                  className={`h-full rounded-full ${rider.score > 80 ? 'bg-emerald-500' : rider.score >= 60 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                                  style={{ width: `${rider.score}%` }}
+                                />
+                              </div>
+                              <span className={`text-sm font-black ${rider.score > 80 ? 'text-emerald-600 dark:text-emerald-400' : rider.score >= 60 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>{rider.score}</span>
+                            </div>
+                          </td>
+                          <td className="p-6">
+                            <p className="text-sm font-black">{rider.balance}</p>
+                          </td>
+                          <td className="p-6">
+                            <div className="flex items-center gap-2">
+                              {rider.kyc === 'Pending' && (
+                                <button 
+                                  onClick={() => setSelectedKycRider(rider)}
+                                  className="px-3 py-1.5 bg-yellow-500 text-black rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-yellow-600 transition-colors"
+                                >
+                                  Verify KYC
+                                </button>
+                              )}
+                              <button className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
+                                <MoreVertical size={16} className="text-zinc-400" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {crmTab === 'activity' && (
+                <div className={`rounded-3xl border shadow-sm overflow-hidden p-6 ${cardClass}`}>
+                  <h3 className="text-xl font-black tracking-tight uppercase mb-6">Recent Rider Activity</h3>
+                  <div className="space-y-4">
+                    {RIDER_ACTIVITY_LOG.map(log => (
+                      <div key={log.id} className={`p-4 rounded-2xl border flex items-start gap-4 ${isDarkMode ? 'border-zinc-800 bg-zinc-900/50' : 'border-zinc-100 bg-zinc-50'}`}>
+                        <div className={`p-3 rounded-xl ${
+                          log.type === 'alert' ? 'bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400' :
+                          log.type === 'policy' ? 'bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' :
+                          'bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
+                        }`}>
+                          {log.type === 'alert' ? <AlertTriangle size={20} /> : log.type === 'policy' ? <ShieldCheck size={20} /> : <Clock size={20} />}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-start mb-1">
+                            <h4 className="font-black text-sm">{log.rider}</h4>
+                            <span className="text-[10px] font-bold text-zinc-400">{log.time}</span>
+                          </div>
+                          <p className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-1">{log.action}</p>
+                          <p className="text-sm font-medium">{log.details}</p>
+                        </div>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {activeTab === 'claims' && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Evidence Viewer */}
-                <div className={`p-8 rounded-3xl border shadow-sm ${cardClass}`}>
-                  <h3 className="text-xl font-black tracking-tight uppercase mb-6">Evidence Viewer</h3>
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="aspect-square bg-zinc-100 dark:bg-zinc-900 rounded-2xl flex flex-col items-center justify-center p-4 border-2 border-dashed border-zinc-200 dark:border-zinc-800">
-                      <img src="https://picsum.photos/seed/accident1/400/400" alt="Evidence 1" className="w-full h-full object-cover rounded-xl mb-2" referrerPolicy="no-referrer" />
-                      <p className="text-[10px] font-black uppercase text-zinc-400">Vehicle Damage</p>
-                    </div>
-                    <div className="aspect-square bg-zinc-100 dark:bg-zinc-900 rounded-2xl flex flex-col items-center justify-center p-4 border-2 border-dashed border-zinc-200 dark:border-zinc-800">
-                      <img src="https://picsum.photos/seed/accident2/400/400" alt="Evidence 2" className="w-full h-full object-cover rounded-xl mb-2" referrerPolicy="no-referrer" />
-                      <p className="text-[10px] font-black uppercase text-zinc-400">Police Report</p>
-                    </div>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <h2 className="text-2xl font-black uppercase tracking-tight">Claims Management</h2>
+                <div className="flex flex-wrap gap-3">
+                  <div className="flex items-center gap-2">
+                    <Filter size={16} className="text-zinc-400" />
+                    <select 
+                      value={claimStatusFilter}
+                      onChange={(e) => setClaimStatusFilter(e.target.value)}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold border outline-none cursor-pointer ${isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'}`}
+                    >
+                      <option value="All">All Statuses</option>
+                      <option value="Urgent">Urgent</option>
+                      <option value="Pending">Pending</option>
+                      <option value="Review">Review</option>
+                      <option value="Approve">Approve</option>
+                      <option value="Reject">Reject</option>
+                    </select>
                   </div>
-                  <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-50 border-zinc-100'}`}>
-                    <div className="flex items-center gap-3 mb-3">
-                      <AlertTriangle className="text-red-500 w-4 h-4" />
-                      <p className="text-xs font-black uppercase text-red-500">Fraud Detection Flag</p>
-                    </div>
-                    <p className="text-xs font-medium text-zinc-500 leading-relaxed">
-                      GPS coordinates at time of incident (12.9716, 77.5946) match a known high-fraud zone. Incident reported 45 minutes after occurrence.
-                    </p>
+                  <select 
+                    value={claimTypeFilter}
+                    onChange={(e) => setClaimTypeFilter(e.target.value)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold border outline-none cursor-pointer ${isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'}`}
+                  >
+                    <option value="All">All Types</option>
+                    <option value="Accident">Accident</option>
+                    <option value="Theft">Theft</option>
+                    <option value="Medical">Medical</option>
+                    <option value="Damage">Damage</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Claims List */}
+                <div className={`col-span-1 p-6 rounded-3xl border shadow-sm flex flex-col h-[800px] ${cardClass}`}>
+                  <h3 className="text-xl font-black tracking-tight uppercase mb-6">Claims List</h3>
+                  <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+                    {filteredClaims.length > 0 ? filteredClaims.map(claim => (
+                      <div 
+                        key={claim.id} 
+                        onClick={() => setSelectedClaim(claim)} 
+                        className={`p-4 rounded-2xl border cursor-pointer transition-all ${selectedClaim?.id === claim.id ? (isDarkMode ? 'border-yellow-500 bg-zinc-800' : 'border-black bg-zinc-100') : (isDarkMode ? 'border-zinc-800 hover:bg-zinc-800/50' : 'border-zinc-200 hover:bg-zinc-50')}`}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase ${
+                            claim.status === 'Urgent' ? 'bg-red-500 text-white' : 
+                            claim.status === 'Approve' ? 'bg-emerald-500 text-white' :
+                            claim.status === 'Reject' ? 'bg-zinc-500 text-white' :
+                            'bg-yellow-500 text-black'
+                          }`}>
+                            {claim.status}
+                          </span>
+                          <span className="text-[10px] font-bold text-zinc-400">{claim.time}</span>
+                        </div>
+                        <h4 className="font-black text-sm mb-1">{claim.rider}</h4>
+                        <div className="flex justify-between items-center">
+                          <p className="text-xs text-zinc-400 font-bold uppercase tracking-wider">{claim.type} • {claim.id}</p>
+                          <p className="text-sm font-black">{claim.amount}</p>
+                        </div>
+                      </div>
+                    )) : (
+                      <div className="flex flex-col items-center justify-center h-full text-zinc-400">
+                        <FileText size={48} className="mb-4 opacity-20" />
+                        <p className="text-sm font-bold">No claims found</p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Approval Workflow */}
-                <div className={`p-8 rounded-3xl border shadow-sm ${cardClass}`}>
-                  <h3 className="text-xl font-black tracking-tight uppercase mb-6">Claim Processing</h3>
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-4 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900">
-                      <div className="w-12 h-12 rounded-xl bg-yellow-500 flex items-center justify-center text-black font-black">RS</div>
-                      <div>
-                        <p className="font-black">Rahul Sharma</p>
-                        <p className="text-xs text-zinc-400 font-bold">Policy: RG-8821-W • Claim: CLM-9021</p>
+                {/* Details Column */}
+                <div className="col-span-1 lg:col-span-2 space-y-8">
+                  {/* Evidence Viewer */}
+                  <div className={`p-8 rounded-3xl border shadow-sm ${cardClass}`}>
+                    <h3 className="text-xl font-black tracking-tight uppercase mb-6">Evidence Viewer</h3>
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div className="aspect-square bg-zinc-100 dark:bg-zinc-900 rounded-2xl flex flex-col items-center justify-center p-4 border-2 border-dashed border-zinc-200 dark:border-zinc-800">
+                        <img src={`https://picsum.photos/seed/${selectedClaim?.id}1/400/400`} alt="Evidence 1" className="w-full h-full object-cover rounded-xl mb-2" referrerPolicy="no-referrer" />
+                        <p className="text-[10px] font-black uppercase text-zinc-400">Vehicle Damage</p>
+                      </div>
+                      <div className="aspect-square bg-zinc-100 dark:bg-zinc-900 rounded-2xl flex flex-col items-center justify-center p-4 border-2 border-dashed border-zinc-200 dark:border-zinc-800">
+                        <img src={`https://picsum.photos/seed/${selectedClaim?.id}2/400/400`} alt="Evidence 2" className="w-full h-full object-cover rounded-xl mb-2" referrerPolicy="no-referrer" />
+                        <p className="text-[10px] font-black uppercase text-zinc-400">Police Report</p>
                       </div>
                     </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800">
-                        <p className="text-[10px] font-black uppercase text-zinc-400 mb-1">Claim Amount</p>
-                        <p className="text-xl font-black">₹12,450</p>
+                    {selectedClaim?.status === 'Urgent' && (
+                      <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-50 border-zinc-100'}`}>
+                        <div className="flex items-center gap-3 mb-3">
+                          <AlertTriangle className="text-red-500 w-4 h-4" />
+                          <p className="text-xs font-black uppercase text-red-500">Fraud Detection Flag</p>
+                        </div>
+                        <p className="text-xs font-medium text-zinc-500 leading-relaxed">
+                          GPS coordinates at time of incident match a known high-fraud zone. Incident reported 45 minutes after occurrence.
+                        </p>
                       </div>
-                      <div className="p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800">
-                        <p className="text-[10px] font-black uppercase text-zinc-400 mb-1">Incident Time</p>
-                        <p className="text-xl font-black">11:42 AM</p>
-                      </div>
-                    </div>
+                    )}
+                  </div>
 
-                    <div className="space-y-3">
-                      <button className="w-full flex items-center justify-center gap-2 py-4 bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-600 transition-all">
-                        <CheckCircle2 size={20} /> Approve Payout
-                      </button>
-                      <button className="w-full flex items-center justify-center gap-2 py-4 bg-red-500 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-red-600 transition-all">
-                        <XCircle size={20} /> Reject Claim
-                      </button>
-                      <button className="w-full flex items-center justify-center gap-2 py-4 border-2 border-black dark:border-white rounded-2xl font-black uppercase tracking-widest hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all">
-                        <Clock size={20} /> Request Info
-                      </button>
+                  {/* Approval Workflow */}
+                  <div className={`p-8 rounded-3xl border shadow-sm ${cardClass}`}>
+                    <h3 className="text-xl font-black tracking-tight uppercase mb-6">Claim Processing</h3>
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900">
+                        <div className="w-12 h-12 rounded-xl bg-yellow-500 flex items-center justify-center text-black font-black">
+                          {selectedClaim?.rider.split(' ').map((n: string) => n[0]).join('')}
+                        </div>
+                        <div>
+                          <p className="font-black">{selectedClaim?.rider}</p>
+                          <p className="text-xs text-zinc-400 font-bold">Policy: {selectedClaim?.policy} • Claim: {selectedClaim?.id}</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800">
+                          <p className="text-[10px] font-black uppercase text-zinc-400 mb-1">Claim Amount</p>
+                          <p className="text-xl font-black">{selectedClaim?.amount}</p>
+                        </div>
+                        <div className="p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800">
+                          <p className="text-[10px] font-black uppercase text-zinc-400 mb-1">Incident Time</p>
+                          <p className="text-xl font-black">{selectedClaim?.time}</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <button className="w-full flex items-center justify-center gap-2 py-4 bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-600 transition-all">
+                          <CheckCircle2 size={20} /> Approve Payout
+                        </button>
+                        <button className="w-full flex items-center justify-center gap-2 py-4 bg-red-500 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-red-600 transition-all">
+                          <XCircle size={20} /> Reject Claim
+                        </button>
+                        <button className="w-full flex items-center justify-center gap-2 py-4 border-2 border-black dark:border-white rounded-2xl font-black uppercase tracking-widest hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all">
+                          <Clock size={20} /> Request Info
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -573,6 +855,93 @@ const AdminDashboard: React.FC = () => {
           )}
         </div>
       </main>
+
+      {/* KYC Verification Modal */}
+      {selectedKycRider && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className={`w-full max-w-2xl rounded-3xl border shadow-2xl overflow-hidden flex flex-col max-h-[90vh] ${isDarkMode ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-zinc-200'}`}>
+            <div className="p-6 border-b flex justify-between items-center sticky top-0 z-10 bg-inherit border-inherit">
+              <div>
+                <h3 className="text-xl font-black uppercase tracking-tight">KYC Verification</h3>
+                <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Rider: {selectedKycRider.name}</p>
+              </div>
+              <button 
+                onClick={() => setSelectedKycRider(null)}
+                className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+              >
+                <XCircle size={24} className="text-zinc-400" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <h4 className="text-xs font-black uppercase text-zinc-500">Government ID (Aadhaar)</h4>
+                    <label className="cursor-pointer text-[10px] font-bold text-blue-500 hover:text-blue-600 flex items-center gap-1">
+                      <Upload size={12} /> Upload New
+                      <input type="file" className="hidden" accept="image/*,.pdf" />
+                    </label>
+                  </div>
+                  <div className="aspect-[1.6] bg-zinc-100 dark:bg-zinc-900 rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 flex items-center justify-center overflow-hidden relative group">
+                    <img src="https://picsum.photos/seed/idcard/600/400" alt="ID Card" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <button className="px-4 py-2 bg-white text-black rounded-xl text-xs font-black uppercase">View Full</button>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <h4 className="text-xs font-black uppercase text-zinc-500">Driving License</h4>
+                    <label className="cursor-pointer text-[10px] font-bold text-blue-500 hover:text-blue-600 flex items-center gap-1">
+                      <Upload size={12} /> Upload New
+                      <input type="file" className="hidden" accept="image/*,.pdf" />
+                    </label>
+                  </div>
+                  <div className="aspect-[1.6] bg-zinc-100 dark:bg-zinc-900 rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 flex items-center justify-center overflow-hidden relative group">
+                    <img src="https://picsum.photos/seed/license/600/400" alt="Driving License" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <button className="px-4 py-2 bg-white text-black rounded-xl text-xs font-black uppercase">View Full</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-50 border-zinc-200'}`}>
+                <h4 className="text-xs font-black uppercase text-zinc-500 mb-3">Extracted Details</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-[10px] font-bold text-zinc-400 uppercase">Name Match</p>
+                    <p className="text-sm font-black text-emerald-500 flex items-center gap-1"><CheckCircle2 size={14} /> 98% Match</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-zinc-400 uppercase">License Validity</p>
+                    <p className="text-sm font-black text-emerald-500 flex items-center gap-1"><CheckCircle2 size={14} /> Valid till 2032</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className={`p-6 border-t flex gap-4 sticky bottom-0 bg-inherit border-inherit`}>
+              <button 
+                onClick={() => {
+                  setRidersList(prev => prev.map(r => r.id === selectedKycRider.id ? { ...r, kyc: 'Verified' } : r));
+                  setSelectedKycRider(null);
+                }}
+                className="flex-1 py-4 bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-600 transition-all flex items-center justify-center gap-2"
+              >
+                <UserCheck size={20} /> Approve KYC
+              </button>
+              <button 
+                onClick={() => setSelectedKycRider(null)}
+                className="flex-1 py-4 bg-red-500 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-red-600 transition-all flex items-center justify-center gap-2"
+              >
+                <XCircle size={20} /> Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

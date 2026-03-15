@@ -1,5 +1,6 @@
 import React from 'react';
 import { Quote } from 'lucide-react';
+import { useTheme } from '../src/ThemeContext';
 
 const testimonials = [
   {
@@ -23,12 +24,14 @@ const testimonials = [
 ];
 
 const Testimonials: React.FC = () => {
+  const { theme } = useTheme();
+
   return (
-    <section className="py-24 bg-zinc-50">
+    <section className={`py-24 transition-colors duration-300 ${theme === 'dark' ? 'bg-zinc-950' : 'bg-zinc-100'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-display font-bold text-black mb-4 uppercase">RIDER VOICES</h2>
-          <p className="text-xl text-zinc-600 max-w-2xl mx-auto font-medium">
+          <h2 className={`text-4xl md:text-5xl font-display font-bold mb-4 uppercase ${theme === 'dark' ? 'text-white' : 'text-black'}`}>RIDER VOICES</h2>
+          <p className={`text-xl max-w-2xl mx-auto font-medium ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}`}>
             Hear from the thousands of professionals who trust RiderGuard every day.
           </p>
         </div>
@@ -37,24 +40,28 @@ const Testimonials: React.FC = () => {
           {testimonials.map((t, index) => (
             <div 
               key={index} 
-              className="bg-white p-8 rounded-3xl border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col"
+              className={`p-8 rounded-3xl border-4 flex flex-col transition-all duration-300 ${
+                theme === 'dark' 
+                  ? 'bg-zinc-900 border-white shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)]' 
+                  : 'bg-white border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]'
+              }`}
             >
               <div className="mb-6">
                 <Quote className="w-10 h-10 text-yellow-400 fill-yellow-400" />
               </div>
-              <p className="text-lg font-bold text-black mb-8 flex-1 leading-tight">
+              <p className={`text-lg font-bold mb-8 flex-1 leading-tight ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
                 "{t.quote}"
               </p>
-              <div className="flex items-center gap-4 pt-6 border-t border-zinc-100">
+              <div className={`flex items-center gap-4 pt-6 border-t ${theme === 'dark' ? 'border-white/10' : 'border-black/10'}`}>
                 <img 
                   src={t.avatar} 
                   alt={t.name} 
-                  className="w-14 h-14 rounded-full border-2 border-black object-cover"
+                  className={`w-14 h-14 rounded-full border-2 object-cover ${theme === 'dark' ? 'border-white' : 'border-black'}`}
                   referrerPolicy="no-referrer"
                 />
                 <div>
-                  <h4 className="font-black text-black uppercase tracking-tight">{t.name}</h4>
-                  <p className="text-zinc-500 text-sm font-bold uppercase tracking-wider">{t.role}</p>
+                  <h4 className={`font-black uppercase tracking-tight ${theme === 'dark' ? 'text-white' : 'text-black'}`}>{t.name}</h4>
+                  <p className={`text-sm font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-500'}`}>{t.role}</p>
                 </div>
               </div>
             </div>

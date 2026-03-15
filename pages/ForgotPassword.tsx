@@ -25,19 +25,19 @@ const ForgotPassword: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
       <Link to="/" className="flex items-center gap-2 mb-12 hover:opacity-80 transition-opacity">
         <Shield className="w-10 h-10 text-yellow-500" />
-        <span className="text-3xl font-display font-bold text-black">RIDERGUARD</span>
+        <span className="text-3xl font-display font-bold text-white">RIDERGUARD</span>
       </Link>
 
-      <div className="w-full max-w-md bg-white p-8 md:p-10 rounded-3xl border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
-        <Link to="/login" className="flex items-center gap-2 text-zinc-400 hover:text-black transition-colors font-bold uppercase text-xs mb-6">
+      <div className="w-full max-w-md bg-zinc-900 p-8 md:p-10 rounded-3xl border-4 border-white/10 shadow-[12px_12px_0px_0px_rgba(255,255,255,0.05)]">
+        <Link to="/login" className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors font-bold uppercase text-xs mb-6">
           <ArrowLeft size={16} />
           Back to Login
         </Link>
 
-        <h1 className="text-3xl font-black text-black mb-2 uppercase">RESET PASSWORD</h1>
+        <h1 className="text-3xl font-black text-white mb-2 uppercase">RESET PASSWORD</h1>
         <p className="text-zinc-500 font-bold mb-8 uppercase tracking-wider">
           {status === 'success' 
             ? 'Check your inbox' 
@@ -45,18 +45,18 @@ const ForgotPassword: React.FC = () => {
         </p>
 
         {status === 'success' ? (
-          <div className="bg-green-50 border-2 border-green-500 p-6 rounded-2xl flex flex-col items-center text-center">
+          <div className="bg-green-500/10 border-2 border-green-500 p-6 rounded-2xl flex flex-col items-center text-center">
             <CheckCircle2 className="w-12 h-12 text-green-500 mb-4" />
-            <p className="text-green-800 font-bold mb-4">
+            <p className="text-green-200 font-bold mb-4">
               We've sent a password reset link to <br />
               <span className="font-black underline">{email}</span>
             </p>
-            <p className="text-green-700 text-sm font-medium mb-6">
+            <p className="text-green-400/70 text-sm font-medium mb-6">
               Please check your spam folder if you don't see it within a few minutes.
             </p>
             <Link 
               to="/login" 
-              className="w-full bg-black text-white py-4 rounded-xl font-black text-lg hover:bg-zinc-800 transition-all"
+              className="w-full bg-white text-black py-4 rounded-xl font-black text-lg hover:bg-zinc-200 transition-all"
             >
               RETURN TO LOGIN
             </Link>
@@ -64,23 +64,23 @@ const ForgotPassword: React.FC = () => {
         ) : (
           <form className="space-y-6" onSubmit={handleSubmit}>
             {status === 'error' && (
-              <div className="bg-red-50 border-2 border-red-500 p-4 rounded-xl flex items-center gap-3 text-red-700">
+              <div className="bg-red-500/10 border-2 border-red-500 p-4 rounded-xl flex items-center gap-3 text-red-500">
                 <AlertCircle className="shrink-0 w-5 h-5" />
                 <p className="text-sm font-bold">{errorMessage}</p>
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-black text-black uppercase mb-2">Email Address</label>
+              <label className="block text-sm font-black text-zinc-300 uppercase mb-2">Email Address</label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" />
                 <input 
                   type="email" 
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="rider@example.com"
-                  className="w-full pl-12 pr-4 py-4 bg-zinc-100 border-2 border-transparent focus:border-yellow-400 focus:bg-white rounded-xl outline-none font-bold transition-all"
+                  className="w-full pl-12 pr-4 py-4 bg-zinc-800 border-2 border-white/5 focus:border-yellow-400 focus:bg-zinc-700 rounded-xl outline-none font-bold transition-all text-white placeholder:text-zinc-600"
                 />
               </div>
             </div>
@@ -88,7 +88,7 @@ const ForgotPassword: React.FC = () => {
             <button 
               type="submit" 
               disabled={status === 'loading'}
-              className="w-full bg-black text-white py-4 rounded-xl font-black text-lg hover:bg-zinc-800 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-white text-black py-4 rounded-xl font-black text-lg hover:bg-zinc-200 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {status === 'loading' ? 'SENDING...' : 'SEND RESET LINK'}
             </button>
@@ -96,7 +96,7 @@ const ForgotPassword: React.FC = () => {
         )}
       </div>
       
-      <p className="mt-8 text-zinc-400 text-xs font-black uppercase tracking-widest">
+      <p className="mt-8 text-zinc-600 text-xs font-black uppercase tracking-widest">
         Secure Password Recovery System
       </p>
     </div>

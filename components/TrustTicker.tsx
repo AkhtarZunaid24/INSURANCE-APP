@@ -6,13 +6,13 @@ const partners = [
 
 const TrustTicker: React.FC = () => {
   return (
-    <section id="trust" className="py-16 bg-black overflow-hidden">
+    <section id="trust" className="py-16 bg-[#ffffff] overflow-hidden">
       <div className="flex flex-col items-center mb-10">
         <h2 className="text-zinc-500 text-sm font-black tracking-[0.3em] uppercase">OFFICIAL PARTNER NETWORK</h2>
       </div>
       
       <div className="relative flex overflow-x-hidden">
-        <div className="animate-marquee whitespace-nowrap flex items-center gap-16 py-4">
+        <div className="animate-marquee whitespace-nowrap flex items-center gap-16 py-4 bg-[#000000]">
           {partners.concat(partners).map((partner, index) => (
             <span 
               key={index} 
@@ -24,7 +24,7 @@ const TrustTicker: React.FC = () => {
         </div>
 
         {/* Second set for seamless loop */}
-        <div className="absolute top-0 animate-marquee2 whitespace-nowrap flex items-center gap-16 py-4">
+        <div className="absolute top-0 animate-marquee2 whitespace-nowrap flex items-center gap-16 py-4" aria-hidden="true">
            {partners.concat(partners).map((partner, index) => (
             <span 
               key={index} 

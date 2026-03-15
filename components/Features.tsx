@@ -49,8 +49,11 @@ const Features: React.FC = () => {
               <p className="text-zinc-600 leading-relaxed font-medium">
                 {feature.description}
               </p>
-              <button className="mt-8 text-black font-bold flex items-center gap-2 hover:gap-3 transition-all">
-                Learn more <span className="text-yellow-500">→</span>
+              <button 
+                className="mt-8 text-black font-bold flex items-center gap-2 hover:gap-3 transition-all focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded-md px-2 py-1 -ml-2"
+                aria-label={`Learn more about ${feature.title}`}
+              >
+                Learn more <span className="text-yellow-500" aria-hidden="true">→</span>
               </button>
             </div>
           ))}

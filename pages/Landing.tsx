@@ -9,7 +9,7 @@ import Footer from '../components/Footer';
 
 const Landing: React.FC = () => {
   return (
-    <div className="min-h-screen bg-white text-black selection:bg-yellow-400 selection:text-black">
+    <div className="min-h-screen bg-black text-white selection:bg-yellow-400 selection:text-black">
       <Navbar />
       <main>
         <Hero />
@@ -41,7 +41,7 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Accessibility Note for Outdoor Use */}
-        <div className="bg-zinc-100 py-4 text-center text-xs font-black tracking-widest text-zinc-400 uppercase">
+        <div className="bg-zinc-900 py-4 text-center text-xs font-black tracking-widest text-zinc-400 uppercase border-t border-white/5">
           High-Contrast Mode Optimized for Outdoor Viewing
         </div>
       </main>
